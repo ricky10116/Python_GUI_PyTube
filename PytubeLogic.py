@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 import Function as F
 from Setting import Ui_Dialog
-
+import shlex
 import re
 import subprocess
 
@@ -32,9 +32,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.thread = Thread(self.pushButton)
         self.thread.breakSignal.connect(self.update)
+        self.thread.breakSignal_PB.connect(self.update_PB)
 
     def update(self,message):
         self.Result_PTE.appendPlainText(message)
+        QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
+
+    def update_PB(self,number):
+        self.progressBar.setValue(number)
         QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
 
     def StartDownload(self):
@@ -129,33 +134,73 @@ class Thread(QtCore.QThread):
 
     # 定義訊號,定義引數為str型別
     breakSignal = pyqtSignal(str)   # 為了發射訊號更新 UI
+    breakSignal_PB = pyqtSignal(int)  # 為了發射訊號更新 UI
 
     def __init__(self,BTN):
         super(Thread, self).__init__()  # 執行父類init
-        self.BTN=BTN
+        self.BTN=BTN                    # pass
 
     def run(self):
         # QtCore.QThread.sleep(2)
-
-        print("CBCT=",CBCT)
         if CBCT == "You-Get":  # https://you-get.org/#getting-started
-            w_path = os.path.join(os.getcwd(), "Downloadfile1")
-            self.breakSignal.emit("Start Download by You-Get: ")
+            # w_path = os.path.join(os.getcwd(), "Downloadfile1")
+            w_path = SaveFolderPath
+            self.breakSignal_PB.emit(0)
+
             #########Download############
+            # try:
+            #     info = subprocess.Popen(
+            #         "you-get --output-dir " + w_path +" "+ dwurl,
+            #         shell=True, stdout=subprocess.PIPE).stdout.read()
+            # except:
+            #     self.breakSignal.emit("error url")
+            # else:
+            #     #########################
+            #     info = info.decode("utf-8", "ignore")
+            #     title=info.partition("\r\n")[2].partition("\r\n")[0].partition(":")[2].replace(" ", "")
+            #     print(title) #
+            #     #########################
+            #     self.breakSignal.emit("End Download : " + title)
+            #     self.BTN.setEnabled(True)
+
+            #########Download############
+
             try:
-                info = subprocess.Popen(
-                    "you-get --output-dir " + w_path +" "+ dwurl,
-                    shell=True, stdout=subprocess.PIPE).stdout.read()
+                process2 = subprocess.Popen(shlex.split("you-get -i " + dwurl), stdout=subprocess.PIPE, shell=True)
             except:
                 self.breakSignal.emit("error url")
+                self.BTN.setEnabled(True)
             else:
-                #########################
-                info = info.decode("utf-8", "ignore")
-                title=info.partition("\r\n")[2].partition("\r\n")[0].partition(":")[2].replace(" ", "")
-                print(title) # 这首【七里香】，是初恋的感觉吗？庆祝周杰伦出道21周年！
-                #########################
+                title = process2.stdout.read().decode().partition("streams")[0].partition("title:")[2].strip()
+                self.breakSignal.emit("Start Download " + title + " by You-Get:")
+
+                command = "you-get --output-dir " + w_path + " " + dwurl
+                process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, shell=True)
+
+                count = -1
+                while True:
+                    # output = process.stdout.readline() run_command("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
+                    output = process.stdout.readline(50).decode('utf-8', 'ignore')
+                    if output == '' and process.poll() is not None:
+                        break
+                    if output:
+                        # print ("output.strip==",output.strip())
+                        if "%" in output:
+                            output1 = output.strip().partition("% (")[0][-5:] + "%"
+                            output1 = output1.replace("\n", "")
+                            try:  # readline(50) will output error cut 1. cannot convert float or convert wrong number
+                                float(output1[:-1]) # %
+                            except:
+                                continue
+                            else:  # 如果没有异常执行这块代码
+                                if float(output1[:-1]) > count:
+                                    count = float(output1[:-3])
+                                    print(output1)
+                                    self.breakSignal_PB.emit(count)
+
                 self.breakSignal.emit("End Download : " + title)
                 self.BTN.setEnabled(True)
+
         else:
             ssl._create_default_https_context = ssl._create_unverified_context
             p = Playlist(dwurl)

@@ -65,17 +65,44 @@ def callcmd():
 # https://www.youtube.com/watch?v=g8nkG7xmY0Q
 
 def run_command(command):
-    process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, shell=True)
+
+    process2 = subprocess.Popen(shlex.split("you-get -i "+command), stdout=subprocess.PIPE, shell=True)
+    title=process2.stdout.read().decode().partition("streams")[0].partition("title:")[2].strip()
+    process = subprocess.Popen(shlex.split("you-get "+command), stdout=subprocess.PIPE, shell=True)
+    count = -1
     while True:
         # output = process.stdout.readline() run_command("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
+
         output = process.stdout.readline(50).decode('utf-8','ignore')
         if output == '' and process.poll() is not None:
             break
         if output:
-            print (output.strip())
+            print ("output.strip==",output.strip())
+            if "%" in output:
+                output1=output.strip().partition("% (")[0][-5:]+"%"
+                output1=output1.replace("\n","")
+                try:  # readline(50) will output error cut 1. cannot convert float or convert wrong number
+                    float(output1[:-3])
+                except:
+                    continue
+                else: # 如果没有异常执行这块代码
+                    if float(output1[:-3])>count:
+                        count=float(output1[:-3])
+                        print(output1)
 
     rc = process.poll()
     return rc
+
+def test2():
+    str="""
+.1MB) ├█████████████
+████████████████
+93
+.8% (  9.5/ 10.1MB) ├█████████
+        """
+    ss=str.partition("% (")[0][-5:] + "%"
+    ss=ss.replace("\n","")
+    print(ss)
 
 def test1(): # https://www.youtube.com/watch?v=ZjDZrReZ4EI
     # yt = YouTube("https://www.youtube.com/watch?v=Ip56kmSzXbI")
@@ -93,7 +120,7 @@ def test1(): # https://www.youtube.com/watch?v=ZjDZrReZ4EI
 if __name__ == "__main__":
 
     # write()
-    read()
+    # read()
     # print(os.getcwd()) # C:\Users\ricky\OneDrive\Desktop\PyTube5
     # pylist()
     # pytube()
@@ -101,7 +128,8 @@ if __name__ == "__main__":
     # callcmd()
     # run_command("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
     # run_command("you-get https://www.youtube.com/watch?v=jNQXAC9IVRw")
-    # run_command("you-get https://www.youtube.com/watch?v=Sk1M0lBHcA4")
+    run_command("https://www.youtube.com/watch?v=Sk1M0lBHcA4")
+    # test2()
     # https://www.youtube.com/watch?v=Sk1M0lBHcA4
     # callcmd5()
     # print(system_call("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
