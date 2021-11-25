@@ -116,19 +116,34 @@ def test1(): # https://www.youtube.com/watch?v=ZjDZrReZ4EI
 
     # video.streams.get_by_itag(137).download()  # salva na pasta
     # video.download()
+def test2():
+    command="https://www.youtube.com/watch?v=ZoOTOybco2w"
+    process2 = subprocess.Popen(shlex.split("you-get -i " + command), stdout=subprocess.PIPE, shell=True)
+    info=process2.stdout.read().decode()
+    title=info.partition("streams")[0].partition("title:")[2].strip()
+    print(title)
+    info=info.partition("[ DEFAULT ]")[0]
+    ###### Get itag and container+quality
+    Video={}
+    while "itag:" in info:
+        itag=info.partition("itag:")[2].partition("container")[0].strip()
+        container = info.partition("container:")[2].partition("quality")[0].strip()
+        quality = info.partition("quality:")[2].partition("size")[0].strip()
+        info= info.partition("size")[2]
+        Video[itag]=container+","+quality
+
+    print(Video)
+
 
 if __name__ == "__main__":
 
-    # write()
-    # read()
-    # print(os.getcwd()) # C:\Users\ricky\OneDrive\Desktop\PyTube5
-    # pylist()
-    # pytube()
+
     # You_Get() #https://www.youtube.com/watch?v=rzR9TM8Td5g
     # callcmd()
     # run_command("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
     # run_command("you-get https://www.youtube.com/watch?v=jNQXAC9IVRw")
-    run_command("https://www.youtube.com/watch?v=Sk1M0lBHcA4")
+    # run_command("https://www.youtube.com/watch?v=Sk1M0lBHcA4")
+    # run_command("https://www.youtube.com/watch?v=Sk1M0lBHcA4")
     # test2()
     # https://www.youtube.com/watch?v=Sk1M0lBHcA4
     # callcmd5()
@@ -136,3 +151,5 @@ if __name__ == "__main__":
     # test1()
     # print(b' [36\xe9\xa6\x96] 2001\xe5\xb9\xb4\xe5\x9b\xbd\xe8'.decode('utf-8',"ignore"))
     # test1()
+    test2()
+    # you-get -l https://www.bilibili.com/video/BV16W411D78N/?spm_id_from=333.788.videocard.3

@@ -3,7 +3,6 @@ from PytubeUI import Ui_MainWindow
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from pytube import YouTube
-import Function as F
 import os
 from pytube import Playlist
 import ssl
@@ -34,6 +33,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.thread.breakSignal.connect(self.update)
         self.thread.breakSignal_PB.connect(self.update_PB)
 
+        self.Thread_VideoMusic = Thread_VideoMusic(self.comboBox,self.pushButton)
+        self.Thread_VideoMusic.breakSignal.connect(self.update)
+        self.Thread_VideoMusic.breakSignal_PB.connect(self.update_PB)
+
     def update(self,message):
         self.Result_PTE.appendPlainText(message)
         QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
@@ -54,32 +57,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(self.comboBox.currentText())
 
             if self.comboBox.currentText() == "Video" or self.comboBox.currentText() == "Music":
-                print(dwurl)
-                url=str(dwurl)
-                try :
-                    yt = YouTube(url)
-                except:
-                    self.Result_PTE.appendPlainText("Error url")
-                    QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
-                else:
-                    video = yt.streams.get_highest_resolution()
-
-                    self.Result_PTE.appendPlainText("Start Download : "+video.default_filename)
-                    QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
-                    w_path=os.path.join(os.getcwd(), "Downloadfile", video.default_filename)
-                    try:
-                        os.remove(w_path)
-                    except:
-                        pass
-                    # Download
-                    video.download(os.path.join(os.getcwd(), "Downloadfile"))
-
-                    if self.comboBox.currentText() == "Music":
-                        F.mp4tomp3(w_path)
-                    self.Result_PTE.appendPlainText("End Download...")
+                if not self.Thread_VideoMusic.isRunning():
+                    self.pushButton.setEnabled(False)
+                    self.Thread_VideoMusic.start()
 
             elif self.comboBox.currentText() == "You-Get" :
-
                 if not self.thread.isRunning():    # "You-Get"
                     self.pushButton.setEnabled(False)
                     self.thread.start()
@@ -93,17 +75,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ret = s.exec_()
 
         print(ret)  # accepted1 or reject0
-
-        ######################################
-        # self.Dialog = QtWidgets.QDialog()
-        # self.s = Ui_Dialog()
-        # self.s.setupUi(self.Dialog)
-        #
-        # self.Dialog.exec_()
-        # # self.Dialog.show()
-        # # # Dialog.open()
-        ######################################
-
 
 ##################################
 
@@ -143,25 +114,8 @@ class Thread(QtCore.QThread):
     def run(self):
         # QtCore.QThread.sleep(2)
         if CBCT == "You-Get":  # https://you-get.org/#getting-started
-            # w_path = os.path.join(os.getcwd(), "Downloadfile1")
             w_path = SaveFolderPath
             self.breakSignal_PB.emit(0)
-
-            #########Download############
-            # try:
-            #     info = subprocess.Popen(
-            #         "you-get --output-dir " + w_path +" "+ dwurl,
-            #         shell=True, stdout=subprocess.PIPE).stdout.read()
-            # except:
-            #     self.breakSignal.emit("error url")
-            # else:
-            #     #########################
-            #     info = info.decode("utf-8", "ignore")
-            #     title=info.partition("\r\n")[2].partition("\r\n")[0].partition(":")[2].replace(" ", "")
-            #     print(title) #
-            #     #########################
-            #     self.breakSignal.emit("End Download : " + title)
-            #     self.BTN.setEnabled(True)
 
             #########Download############
 
@@ -184,7 +138,6 @@ class Thread(QtCore.QThread):
                     if output == '' and process.poll() is not None:
                         break
                     if output:
-                        # print ("output.strip==",output.strip())
                         if "%" in output:
                             output1 = output.strip().partition("% (")[0][-5:] + "%"
                             output1 = output1.replace("\n", "")
@@ -228,4 +181,38 @@ class Thread(QtCore.QThread):
                 self.breakSignal.emit("List download finished")
                 self.BTN.setEnabled(True)
 
+##################################
+class Thread_VideoMusic(QtCore.QThread):
 
+    # 定義訊號,定義引數為str型別
+    breakSignal = pyqtSignal(str)   # 為了發射訊號更新 UI
+    breakSignal_PB = pyqtSignal(int)  # 為了發射訊號更新 UI
+
+    def __init__(self,cbct,BTN):
+        # super(Thread_VideoMusic, self).__init__()  # 執行父類init
+        super().__init__()  # new
+        self.comboBox = cbct
+        self.BTN=BTN
+
+    def run(self):
+        url = str(dwurl)
+        try:
+            yt = YouTube(url)
+        except:
+            self.breakSignal.emit("Error url")
+            self.BTN.setEnabled(True)
+        else:
+            video = yt.streams.get_highest_resolution()
+            self.breakSignal.emit("Start Download : " + video.default_filename)
+            w_path = os.path.join(os.getcwd(), "Downloadfile", video.default_filename)
+            try:
+                os.remove(w_path)
+            except:
+                pass
+            # Download
+            video.download(os.path.join(os.getcwd(), "Downloadfile"))
+
+            if self.comboBox.currentText() == "Music":
+                F.mp4tomp3(w_path)
+            self.breakSignal.emit("End Download...")
+            self.BTN.setEnabled(True)
