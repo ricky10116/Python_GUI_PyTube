@@ -196,23 +196,35 @@ class Thread_VideoMusic(QtCore.QThread):
 
     def run(self):
         url = str(dwurl)
+
+        # on_progress_callback takes 4 parameters. # https://stackoverflow.com/questions/69819048/pytube-how-to-add-the-parameters-for-function-progress-check
+        def progress_Check(stream=None, chunk=None, remaining=None):
+            # Gets the percentage of the file that has been downloaded.
+            percent = (100 * (file_size - remaining)) / file_size
+            self.breakSignal_PB.emit(percent)
+            # print("{:00.0f}% downloaded".format(percent))
+            # print(remaining)
         try:
-            yt = YouTube(url)
+            yt = YouTube(url,on_progress_callback=progress_Check)
         except:
             self.breakSignal.emit("Error url")
             self.BTN.setEnabled(True)
         else:
             video = yt.streams.get_highest_resolution()
+            file_size = video.filesize
             self.breakSignal.emit("Start Download : " + video.default_filename)
+            self.breakSignal_PB.emit(0)
             w_path = os.path.join(os.getcwd(), "Downloadfile", video.default_filename)
             try:
                 os.remove(w_path)
             except:
                 pass
             # Download
+
             video.download(os.path.join(os.getcwd(), "Downloadfile"))
 
             if self.comboBox.currentText() == "Music":
                 F.mp4tomp3(w_path)
             self.breakSignal.emit("End Download...")
             self.BTN.setEnabled(True)
+

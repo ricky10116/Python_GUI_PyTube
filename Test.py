@@ -48,6 +48,22 @@ def pytube():
     yt = YouTube('https://www.youtube.com/watch?v=Ip56kmSzXbI&list=RDIp56kmSzXbI&start_radio=1')
     print(yt.title)
 
+def pytube2():
+    global file_size
+
+    # on_progress_callback takes 4 parameters. # https://stackoverflow.com/questions/69819048/pytube-how-to-add-the-parameters-for-function-progress-check
+    def progress_Check(stream=None, chunk=None, remaining=None):
+        global file_size
+        # Gets the percentage of the file that has been downloaded.
+        percent = (100 * (file_size - remaining)) / file_size
+        print("{:00.0f}% downloaded".format(percent))
+        # print(remaining)
+
+    yt = YouTube('https://www.youtube.com/watch?v=9bZkp7q19f0',on_progress_callback=progress_Check)
+    file_size=yt.streams.get_highest_resolution().filesize
+    yt.streams.get_highest_resolution().download()  # 下載影片
+
+
 def You_Get():
     info = subprocess.Popen(
         "you-get https://www.youtube.com/watch?v=Ip56kmSzXbI&list=RDIp56kmSzXbI&start_radio=1",
@@ -151,5 +167,6 @@ if __name__ == "__main__":
     # test1()
     # print(b' [36\xe9\xa6\x96] 2001\xe5\xb9\xb4\xe5\x9b\xbd\xe8'.decode('utf-8',"ignore"))
     # test1()
-    test2()
+    # test2()
+    pytube2()
     # you-get -l https://www.bilibili.com/video/BV16W411D78N/?spm_id_from=333.788.videocard.3
