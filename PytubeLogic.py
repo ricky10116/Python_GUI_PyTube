@@ -103,8 +103,7 @@ class DialogTEST(QtWidgets.QDialog,Ui_Dialog):
 
 class Thread(QtCore.QThread):
 
-    # 定義訊號,定義引數為str型別
-    breakSignal = pyqtSignal(str)   # 為了發射訊號更新 UI
+    breakSignal = pyqtSignal(str)    # 為了發射訊號更新 UI
     breakSignal_PB = pyqtSignal(int)  # 為了發射訊號更新 UI
 
     def __init__(self,BTN):
@@ -154,7 +153,7 @@ class Thread(QtCore.QThread):
                 self.breakSignal.emit("End Download : " + title)
                 self.BTN.setEnabled(True)
 
-        else:
+        else:          # Pylist
             ssl._create_default_https_context = ssl._create_unverified_context
             p = Playlist(dwurl)
 
@@ -171,13 +170,13 @@ class Thread(QtCore.QThread):
                     self.breakSignal.emit("Start Download : " + video.title)
 
                     QApplication.processEvents()  # 实时显示内容到TExtEdit控件上
-                    w_path = os.path.join(os.getcwd(), "Downloadfile1", video.title)
+                    w_path = os.path.join(SaveFolderPath, "Downloadfile1", video.title)
                     try:
                         os.remove(w_path)
                     except:
                         pass
                     # Download
-                    video.download(os.path.join(os.getcwd(), "Downloadfile1"))
+                    video.download(os.path.join(SaveFolderPath, "Downloadfile1"))
                 self.breakSignal.emit("List download finished")
                 self.BTN.setEnabled(True)
 
@@ -214,14 +213,14 @@ class Thread_VideoMusic(QtCore.QThread):
             file_size = video.filesize
             self.breakSignal.emit("Start Download : " + video.default_filename)
             self.breakSignal_PB.emit(0)
-            w_path = os.path.join(os.getcwd(), "Downloadfile", video.default_filename)
+            w_path = os.path.join(SaveFolderPath, "Downloadfile", video.default_filename)
             try:
                 os.remove(w_path)
             except:
                 pass
             # Download
 
-            video.download(os.path.join(os.getcwd(), "Downloadfile"))
+            video.download(os.path.join(SaveFolderPath, "Downloadfile"))
 
             if self.comboBox.currentText() == "Music":
                 F.mp4tomp3(w_path)

@@ -73,12 +73,11 @@ def You_Get():
     info = info.decode("utf-8", "ignore")
     title = info.partition("\r\n")[2].partition("\r\n")[0].partition(":")[2].replace(" ", "")
     print(title)
-# https://www.youtube.com/watch?v=Ip56kmSzXbI&list=RDIp56kmSzXbI&start_radio=1
-# https://www.youtube.com/watch?v=Sk1M0lBHcA4
+
 
 def callcmd():
     os.system("you-get https://www.youtube.com/watch?v=rzR9TM8Td5g")
-# https://www.youtube.com/watch?v=g8nkG7xmY0Q
+
 
 def run_command(command):
 

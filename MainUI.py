@@ -16,7 +16,6 @@ if __name__ == "__main__":
     if app is None:
         app = QApplication(sys.argv)
 
-
     F.makefolder()
 
     mainWindow = MainWindow()

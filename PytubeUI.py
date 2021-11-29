@@ -34,9 +34,15 @@ class Ui_MainWindow(object):
         self.Title_lable.setObjectName("Title_lable")
         self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
         self.plainTextEdit.setGeometry(QtCore.QRect(10, 110, 531, 71))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.plainTextEdit.setFont(font)
         self.plainTextEdit.setObjectName("plainTextEdit")
         self.Result_PTE = QtWidgets.QPlainTextEdit(self.centralwidget)
         self.Result_PTE.setGeometry(QtCore.QRect(10, 210, 341, 241))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.Result_PTE.setFont(font)
         self.Result_PTE.setObjectName("Result_PTE")
         self.comboBox = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox.setGeometry(QtCore.QRect(380, 210, 161, 51))
@@ -95,7 +101,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.Title_lable.setText(_translate("MainWindow", " YouTube Downloader Lite 1.5.1"))
+        self.Title_lable.setText(_translate("MainWindow", " YouTube Downloader Lite 1.5.2"))
         self.comboBox.setItemText(0, _translate("MainWindow", "Video"))
         self.comboBox.setItemText(1, _translate("MainWindow", "Music"))
         self.comboBox.setItemText(2, _translate("MainWindow", "PylistVideo"))
@@ -105,4 +111,3 @@ class Ui_MainWindow(object):
         self.menuSetting.setTitle(_translate("MainWindow", "Setting"))
         self.actionSaveFolder.setText(_translate("MainWindow", "SaveFolder"))
         self.actionTEST.setText(_translate("MainWindow", "TEST"))
-
