@@ -111,7 +111,6 @@ class Thread(QtCore.QThread):
         self.BTN=BTN                    # pass
 
     def run(self):
-        # QtCore.QThread.sleep(2)
         if CBCT == "You-Get":  # https://you-get.org/#getting-started
             w_path = SaveFolderPath
             self.breakSignal_PB.emit(0)
@@ -153,7 +152,7 @@ class Thread(QtCore.QThread):
                 self.breakSignal.emit("End Download : " + title)
                 self.BTN.setEnabled(True)
 
-        else:          # Pylist
+        else:         ######### Pylist
             ssl._create_default_https_context = ssl._create_unverified_context
             p = Playlist(dwurl)
 
@@ -163,6 +162,8 @@ class Thread(QtCore.QThread):
                 self.breakSignal.emit("error url")
             else:
                 print(f'Downloading: {p.title}')
+                index=0
+                self.breakSignal_PB.emit(0)
                 for video in p.videos:
                     print(video.title)
                     video = video.streams.get_highest_resolution()
@@ -177,6 +178,9 @@ class Thread(QtCore.QThread):
                         pass
                     # Download
                     video.download(os.path.join(SaveFolderPath, "Downloadfile1"))
+                    self.breakSignal_PB.emit(100 * (index/len(p.videos)))
+                    index+=1
+
                 self.breakSignal.emit("List download finished")
                 self.BTN.setEnabled(True)
 
